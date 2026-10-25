@@ -13,10 +13,10 @@ Install dependencies and start MongoDB, then run:
 npm run start:dev
 ```
 
-See `.env.example` for the environment variables. The app currently reads them
-from the process environment; it does not load a `.env` file automatically.
-`PORT` defaults to `3000`, and `MONGODB_URI` defaults to
-`mongodb://127.0.0.1:27017/khatma`.
+The app loads `.env` from the project root when it exists. See `.env.example`
+for the supported variables. `PORT` defaults to `3000`, and `MONGODB_URI`
+defaults to `mongodb://127.0.0.1:27017/khatma`. Node.js 20.12 or newer is
+required for the built-in `.env` loader.
 
 `GET /health` returns `{ "status": "ok" }`.
 
