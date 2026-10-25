@@ -15,8 +15,9 @@ npm run start:dev
 
 The app loads `.env` from the project root when it exists. See `.env.example`
 for the supported variables. `PORT` defaults to `3000`, and `MONGODB_URI`
-defaults to `mongodb://127.0.0.1:27017/khatma`. Node.js 20.12 or newer is
-required for the built-in `.env` loader.
+defaults to `mongodb://127.0.0.1:27017/khatma`. Auth requires the SMTP settings,
+`JWT_SECRET`, and `OTP_PEPPER` at startup. Node.js 20.12 or newer is required
+for the built-in `.env` loader.
 
 `GET /health` returns `{ "status": "ok" }`.
 
@@ -36,11 +37,23 @@ src/
   health/                 # Health endpoint
 ```
 
-Feature folders are Nest modules. Keep each feature's controller, service,
-DTOs, schemas, and feature-specific tests together in that folder as they are
-implemented. Controllers handle HTTP input and responses; services own
-business rules and coordinate persistence. Keep schemas near the feature that
-owns their data. The non-health feature modules are currently scaffolds.
+Feature folders are Nest modules. Auth uses SMTP settings plus `JWT_SECRET`
+and `OTP_PEPPER`; set both to distinct random values of at least 32 bytes and
+keep them only in `.env` or the deployment environment. The auth endpoints are
+`POST /auth/otp/request`, `POST /auth/otp/verify`, `POST /auth/refresh`, and
+`POST /auth/sign-out`; `GET /users/me` requires a bearer access token. Keep each
+feature's controller, service, DTOs, schemas, and feature-specific tests
+together in that folder as they are implemented. Controllers handle HTTP
+input and responses; services own business rules and coordinate persistence.
+Keep schemas near the feature that owns their data. Khatmas, Quran, Zikr, and
+Realtime are currently scaffolds.
+
+Generate each auth secret locally with this command, run twice, and put the
+two different outputs in `JWT_SECRET` and `OTP_PEPPER`:
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
+```
 
 `AppModule` composes feature modules and configures the shared MongoDB
 connection. A feature module should export a provider only when another module

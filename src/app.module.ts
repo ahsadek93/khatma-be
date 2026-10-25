@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { databaseUri } from './config/configuration.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -19,6 +20,16 @@ import { ZikrModule } from './zikr/zikr.module.js';
     ZikrModule,
     RealtimeModule,
     HealthModule,
+  ],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    },
   ],
 })
 export class AppModule {}
