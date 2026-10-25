@@ -1,0 +1,89 @@
+{
+  "info": {
+    "name": "Khatma BE - Auth",
+    "description": "Email OTP authentication and refresh token flow for Khatma BE.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "email", "value": "" },
+    { "key": "otp", "value": "" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Request sign-in code",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/auth/otp/request"
+      }
+    },
+    {
+      "name": "Verify sign-in code",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "if (pm.response.code >= 200 && pm.response.code < 300) {",
+        "  const body = pm.response.json();",
+        "  pm.collectionVariables.set('accessToken', body.accessToken);",
+        "  pm.collectionVariables.set('refreshToken', body.refreshToken);",
+        "  if (body.user?.id) pm.collectionVariables.set('userId', body.user.id);",
+        "}"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"token\": \"{{otp}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/auth/otp/verify"
+      }
+    },
+    {
+      "name": "Refresh session",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "if (pm.response.code >= 200 && pm.response.code < 300) {",
+        "  const body = pm.response.json();",
+        "  pm.collectionVariables.set('accessToken', body.accessToken);",
+        "  pm.collectionVariables.set('refreshToken', body.refreshToken);",
+        "}"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/auth/refresh"
+      }
+    },
+    {
+      "name": "Sign out",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "if (pm.response.code >= 200 && pm.response.code < 300) {",
+        "  pm.collectionVariables.unset('accessToken');",
+        "  pm.collectionVariables.unset('refreshToken');",
+        "}"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/auth/sign-out"
+      }
+    }
+  ]
+}
