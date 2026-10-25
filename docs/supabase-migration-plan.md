@@ -17,9 +17,8 @@ are currently empty.
 - [x] JWT guard and authenticated user identity for protected endpoints.
 - [x] Manually verify OTP request sends email and OTP verification logs the user
   in and returns access and refresh tokens.
-- [ ] Add auth requests to the Postman collection for repeatable verification.
-- [ ] Verify refresh and sign-out endpoints; these are not covered by the
-  reported manual check.
+- [x] Add auth requests to the Postman collection for repeatable verification.
+- [x] Manually verify refresh and sign-out endpoints through Postman.
 
 ### 1. User profile
 
