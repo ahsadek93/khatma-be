@@ -77,7 +77,7 @@ when service APIs change; do not commit real secrets.
 
 ## Phase B: Integrate RN and cut over from Supabase
 
-- [ ] Update RN data adapters to match the verified API collection, keeping the
+- [x] Update RN data adapters to match the verified API collection, keeping the
   existing app behavior and shared contracts where possible.
 - [ ] Run the service Postman collections against the integrated app/backend
   setup; update collections if integration reveals contract differences.
