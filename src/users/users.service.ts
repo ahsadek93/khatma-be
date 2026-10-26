@@ -22,4 +22,10 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
     return { id: user.id, email: user.email, displayName: user.displayName };
   }
+
+  async updateDisplayName(id: string, displayName: string) {
+    const user = await this.users.findByIdAndUpdate(id, { displayName }, { returnDocument: 'after', runValidators: true }).exec();
+    if (!user) throw new NotFoundException('User not found');
+    return { id: user.id, email: user.email, displayName: user.displayName };
+  }
 }
