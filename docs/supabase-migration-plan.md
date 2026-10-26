@@ -30,15 +30,15 @@ modules are currently empty.
 
 ### 2. Shared Khatma lifecycle and membership
 
-- [ ] Create Quran Khatmas and persist owner, name, invite code, and active
+- [x] Create Quran Khatmas and persist owner, name, invite code, and active
   status.
-- [ ] Join by invite code for either Khatma type; enforce membership
+- [x] Join by invite code for either Khatma type; enforce membership
   uniqueness and return the resolved type.
-- [ ] List the current user's active and completed Khatmas, filtered by type.
-- [ ] Read member list, member count, and invite code with existing owner/member
+- [x] List the current user's active and completed Khatmas, filtered by type.
+- [x] Read member list, member count, and invite code with existing owner/member
   access rules.
-- [ ] Preserve completion timestamp and shared identity for Quran and Zikr.
-- [ ] Create or update the Khatmas Postman collection for lifecycle and
+- [x] Preserve completion timestamp and shared identity for Quran and Zikr.
+- [x] Create or update the Khatmas Postman collection for lifecycle and
   membership endpoints.
 
 ### 3. Quran Khatma progress

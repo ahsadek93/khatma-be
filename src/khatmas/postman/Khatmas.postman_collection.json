@@ -1,0 +1,77 @@
+{
+  "info": {
+    "name": "Khatma BE - Khatmas",
+    "description": "Shared Quran/Zikr Khatma lifecycle and membership. Authenticated requests use the access token from the Auth collection. Protected routes return 401 without a valid bearer token; invalid bodies return 400.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "khatmaId", "value": "" },
+    { "key": "khatmaName", "value": "Migration verification" },
+    { "key": "joinCode", "value": "" },
+    { "key": "type", "value": "quran" }
+  ],
+  "item": [
+    {
+      "name": "Create Quran Khatma",
+      "description": "Creates an active Quran Khatma and adds the current user as owner. Returns { id, name }.",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "if (pm.response.code === 201) pm.collectionVariables.set('khatmaId', pm.response.json().id);"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{khatmaName}}\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/khatmas"
+      },
+      "response": []
+    },
+    {
+      "name": "Join Khatma by code",
+      "description": "Joins an active Quran or Zikr Khatma. Repeated joins are idempotent. Invalid or inactive code returns 404.",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "if (pm.response.code === 201) {",
+        "  const body = pm.response.json();",
+        "  pm.collectionVariables.set('khatmaId', body.id);",
+        "  pm.collectionVariables.set('type', body.type);",
+        "}"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"code\": \"{{joinCode}}\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/khatmas/join"
+      },
+      "response": []
+    },
+    {
+      "name": "List active Khatmas",
+      "description": "Returns the current user's Khatmas filtered by type; active results include memberCount.",
+      "request": { "method": "GET", "url": "{{baseUrl}}/khatmas?status=active&type={{type}}" },
+      "response": []
+    },
+    {
+      "name": "List completed Khatmas",
+      "description": "Returns the current user's completed Khatmas with completedAt.",
+      "request": { "method": "GET", "url": "{{baseUrl}}/khatmas?status=completed&type={{type}}" },
+      "response": []
+    },
+    {
+      "name": "Read Khatma members",
+      "description": "Members only. Returns userId, displayName, role, and joinedAt for each member. Non-member access returns 403; unknown id returns 404.",
+      "request": { "method": "GET", "url": "{{baseUrl}}/khatmas/{{khatmaId}}/members" },
+      "response": []
+    },
+    {
+      "name": "Read invite code",
+      "description": "Members only. Returns { joinCode }. Non-member access returns 403; unknown id returns 404.",
+      "request": { "method": "GET", "url": "{{baseUrl}}/khatmas/{{khatmaId}}/invite" },
+      "response": []
+    }
+  ]
+}
