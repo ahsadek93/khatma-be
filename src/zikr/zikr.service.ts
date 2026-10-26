@@ -3,10 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import type { Model } from 'mongoose';
 import { Khatma } from '../khatmas/khatma.schema.js';
+import { RealtimeService } from '../realtime/realtime.service.js';
 
 @Injectable()
 export class ZikrService {
-  constructor(@InjectModel(Khatma.name) private readonly khatmas: Model<Khatma>) {}
+  constructor(@InjectModel(Khatma.name) private readonly khatmas: Model<Khatma>, private readonly realtime: RealtimeService) {}
 
   async getProgress(userId: string, id: string) {
     const khatma = await this.getKhatma(userId, id);
@@ -35,6 +36,7 @@ export class ZikrService {
       ] } } }],
     ).exec();
     if (result.matchedCount !== 1) throw new ConflictException('Claim exceeds the remaining goal');
+    this.realtime.publish(id, 'progressChanged');
     return null;
   }
 
@@ -46,6 +48,7 @@ export class ZikrService {
       { $pull: { zikrClaims: { userId } } },
     ).exec();
     if (result.modifiedCount !== 1) throw new ConflictException('You have no pending claim');
+    this.realtime.publish(id, 'progressChanged');
     return null;
   }
 
@@ -63,6 +66,9 @@ export class ZikrService {
       ],
     ).exec();
     if (result.modifiedCount !== 1) throw new ConflictException('You have no pending claim');
+    this.realtime.publish(id, 'progressChanged');
+    const completed = await this.khatmas.exists({ _id: id, status: 'completed' });
+    if (completed) this.realtime.publish(id, 'completed');
     return null;
   }
 
@@ -75,6 +81,7 @@ export class ZikrService {
       { $set: { zikrPhrase: phrase, zikrGoalCount: goalCount } },
     ).exec();
     if (result.matchedCount !== 1) throw new ConflictException('Zikr Khatma settings cannot be updated');
+    this.realtime.publish(id, 'progressChanged');
     return null;
   }
 

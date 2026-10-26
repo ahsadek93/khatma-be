@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
 import { Khatma } from '../khatmas/khatma.schema.js';
 import { User } from '../users/user.schema.js';
+import { RealtimeService } from '../realtime/realtime.service.js';
 
 @Injectable()
 export class QuranService {
   constructor(
     @InjectModel(Khatma.name) private readonly khatmas: Model<Khatma>,
     @InjectModel(User.name) private readonly users: Model<User>,
+    private readonly realtime: RealtimeService,
   ) {}
 
   async getJuz(userId: string, id: string) {
@@ -58,11 +60,13 @@ export class QuranService {
     const result = await this.khatmas.updateOne(filter, update).exec();
     if (result.modifiedCount !== 1) throw new ConflictException(action === 'claim' ? 'Juz is unavailable' : 'You do not hold this Juz');
 
+    this.realtime.publish(id, 'progressChanged');
     if (action === 'complete') {
-      await this.khatmas.updateOne(
+      const completion = await this.khatmas.updateOne(
         { _id: id, type: 'quran', status: 'active', quranJuz: { $not: { $elemMatch: { status: { $ne: 'completed' } } } } },
         [{ $set: { status: 'completed', completedAt: { $ifNull: ['$completedAt', now] } } }],
       ).exec();
+      if (completion.modifiedCount === 1) this.realtime.publish(id, 'completed');
     }
     return null;
   }

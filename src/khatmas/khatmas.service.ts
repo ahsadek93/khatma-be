@@ -4,12 +4,14 @@ import { Types } from 'mongoose';
 import type { Model } from 'mongoose';
 import { User } from '../users/user.schema.js';
 import { Khatma } from './khatma.schema.js';
+import { RealtimeService } from '../realtime/realtime.service.js';
 
 @Injectable()
 export class KhatmasService {
   constructor(
     @InjectModel(Khatma.name) private readonly khatmas: Model<Khatma>,
     @InjectModel(User.name) private readonly users: Model<User>,
+    private readonly realtime: RealtimeService,
   ) {}
 
   async create(userId: string, name: string) {
@@ -43,8 +45,10 @@ export class KhatmasService {
       { $push: { members: { userId: memberId, role: 'member' } } },
       { returnDocument: 'after' },
     ).exec();
+    const joined = Boolean(khatma);
     if (!khatma) khatma = await this.khatmas.findOne({ joinCode: code, status: 'active', 'members.userId': memberId }).exec();
     if (!khatma) throw new NotFoundException('Khatma code is invalid or inactive');
+    if (joined) this.realtime.publish(khatma.id, 'membersChanged');
     return { id: khatma.id, type: khatma.type };
   }
 

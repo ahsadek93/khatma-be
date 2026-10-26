@@ -5,7 +5,7 @@ backend in `khatma-be` against the existing RN Supabase behavior. During Phase
 A, implement each service and create or update its Postman collection. Run the
 end-to-end verification when the RN app is migrated to the new APIs in Phase
 B. Auth and profile are implemented in BE; Khatmas, Quran, Zikr, and realtime
-modules are currently empty.
+modules have been implemented; Phase B integration and verification remain.
 
 ## Migration order
 
@@ -65,9 +65,9 @@ modules are currently empty.
 
 ### 5. Realtime updates
 
-- [ ] Replace Supabase Realtime subscriptions with BE-backed events for Quran
+- [x] Replace Supabase Realtime subscriptions with BE-backed events for Quran
   progress, Zikr progress/configuration, member changes, and completion.
-- [ ] Create or update the realtime Postman collection with the steps needed
+- [x] Create or update the realtime Postman collection with the steps needed
   to connect and observe service events.
 
 Each service collection lives in that module's `postman/` directory and

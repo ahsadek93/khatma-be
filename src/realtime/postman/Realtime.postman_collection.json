@@ -1,0 +1,21 @@
+{
+  "info": {
+    "name": "Khatma BE - Realtime",
+    "description": "Authenticated Server-Sent Events for active Khatmas. Create or join a Khatma using the Khatmas collection, copy its id to khatmaId, and use the Auth collection to set accessToken. Send Connect to Khatma events and keep the response open. The initial event is connected; successful changes emit progressChanged for Quran progress, Zikr progress/settings, membersChanged for new members, and completed when the Khatma completes. Each event has the same string in its event name and data. Unknown Khatmas return 404; non-members return 403; missing or invalid tokens return 401.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "khatmaId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Connect to Khatma events",
+      "description": "GET /realtime/khatmas/:id/events. Keep the SSE response open while sending a mutation from the Quran, Zikr, or Khatmas collection in another tab/session. Event types: connected, progressChanged, membersChanged, completed. Auth requires the current user's bearer token and Khatma membership.",
+      "request": { "method": "GET", "header": [{ "key": "Accept", "value": "text/event-stream" }], "url": "{{baseUrl}}/realtime/khatmas/{{khatmaId}}/events" },
+      "response": []
+    }
+  ]
+}

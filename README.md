@@ -45,8 +45,10 @@ keep them only in `.env` or the deployment environment. The auth endpoints are
 feature's controller, service, DTOs, schemas, and feature-specific tests
 together in that folder as they are implemented. Controllers handle HTTP
 input and responses; services own business rules and coordinate persistence.
-Keep schemas near the feature that owns their data. Khatmas, Quran, Zikr, and
-Realtime are currently scaffolds.
+Keep schemas near the feature that owns their data. Realtime updates use
+authenticated Server-Sent Events at
+`GET /realtime/khatmas/:id/events`; see `src/realtime/postman/` for the
+Postman collection and event names.
 
 Generate each auth secret locally with this command, run twice, and put the
 two different outputs in `JWT_SECRET` and `OTP_PEPPER`:
