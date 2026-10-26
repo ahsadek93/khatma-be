@@ -43,12 +43,12 @@ modules are currently empty.
 
 ### 3. Quran Khatma progress
 
-- [ ] Read the 30 Juz states and current user's selected Juz.
-- [ ] Claim, release, and complete a Juz with atomic conflict handling so one
+- [x] Read the 30 Juz states and current user's selected Juz.
+- [x] Claim, release, and complete a Juz with atomic conflict handling so one
   Juz cannot be claimed by multiple members.
-- [ ] Update Khatma completion when all Juz are completed, preserving current
+- [x] Update Khatma completion when all Juz are completed, preserving current
   lifecycle behavior.
-- [ ] Create or update the Quran Postman collection for progress endpoints.
+- [x] Create or update the Quran Postman collection for progress endpoints.
 
 ### 4. Zikr Khatma progress
 

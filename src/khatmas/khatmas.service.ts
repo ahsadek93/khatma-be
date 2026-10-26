@@ -13,7 +13,12 @@ export class KhatmasService {
   ) {}
 
   async create(userId: string, name: string) {
-    const khatma = await this.khatmas.create({ name, createdBy: userId, members: [{ userId, role: 'owner' }] });
+    const khatma = await this.khatmas.create({
+      name,
+      createdBy: userId,
+      members: [{ userId, role: 'owner' }],
+      quranJuz: Array.from({ length: 30 }, (_, index) => ({ juzNumber: index + 1 })),
+    });
     return { id: khatma.id, name: khatma.name };
   }
 

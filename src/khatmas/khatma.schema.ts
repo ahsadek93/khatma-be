@@ -15,6 +15,22 @@ export class KhatmaMember {
 
 const KhatmaMemberSchema = SchemaFactory.createForClass(KhatmaMember);
 
+@Schema({ _id: false })
+export class QuranJuz {
+  @Prop({ required: true, min: 1, max: 30 })
+  juzNumber!: number;
+  @Prop({ required: true, enum: ['free', 'claimed', 'completed'], default: 'free' })
+  status!: 'free' | 'claimed' | 'completed';
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
+  claimedBy!: Types.ObjectId | null;
+  @Prop({ default: null })
+  claimedAt!: Date | null;
+  @Prop({ default: null })
+  completedAt!: Date | null;
+}
+
+const QuranJuzSchema = SchemaFactory.createForClass(QuranJuz);
+
 @Schema({ timestamps: { createdAt: true, updatedAt: false } })
 export class Khatma {
   @Prop({ required: true, trim: true, minlength: 1, maxlength: 100 })
@@ -31,6 +47,8 @@ export class Khatma {
   completedAt!: Date | null;
   @Prop({ type: [KhatmaMemberSchema], default: [] })
   members!: KhatmaMember[];
+  @Prop({ type: [QuranJuzSchema], default: undefined })
+  quranJuz?: QuranJuz[];
 }
 
 export const KhatmaSchema = SchemaFactory.createForClass(Khatma);

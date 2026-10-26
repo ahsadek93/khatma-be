@@ -1,0 +1,64 @@
+{
+  "info": {
+    "name": "Khatma BE - Quran",
+    "description": "Quran Khatma progress. Authenticated requests use the access token from the Auth collection. Requests are available to Khatma members; invalid ids or Juz numbers return 400, unknown or non-Quran Khatmas return 404, non-members return 403, and unavailable Juz actions return 409.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "khatmaId", "value": "" },
+    { "key": "juzNumber", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Read all Juz states",
+      "description": "Returns 30 ordered objects shaped as { juzNumber, status, claimedBy, claimedByName }. status is free, claimed, or completed; member-only.",
+      "request": { "method": "GET", "url": "{{baseUrl}}/quran/khatmas/{{khatmaId}}/juz" },
+      "response": []
+    },
+    {
+      "name": "Read current user's progress",
+      "description": "Returns { completedJuz, selectedJuz } where selectedJuz contains only this user's claimed Juz numbers.",
+      "request": { "method": "GET", "url": "{{baseUrl}}/quran/khatmas/{{khatmaId}}/progress" },
+      "response": []
+    },
+    {
+      "name": "Claim a Juz",
+      "description": "Atomically claims a free Juz for the current member. Returns null; an already claimed/completed Juz returns 409.",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"juzNumber\": {{juzNumber}}\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/quran/khatmas/{{khatmaId}}/claim"
+      },
+      "response": []
+    },
+    {
+      "name": "Release my Juz",
+      "description": "Atomically releases a Juz claimed by the current member. Returns null; a Juz not held by the current member returns 409.",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"juzNumber\": {{juzNumber}}\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/quran/khatmas/{{khatmaId}}/release"
+      },
+      "response": []
+    },
+    {
+      "name": "Complete my Juz",
+      "description": "Atomically completes a Juz claimed by the current member. Completing the final Juz also marks the shared Khatma completed and sets completedAt. Returns null.",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"juzNumber\": {{juzNumber}}\n}", "options": { "raw": { "language": "json" } } },
+        "url": "{{baseUrl}}/quran/khatmas/{{khatmaId}}/complete"
+      },
+      "response": []
+    }
+  ]
+}
