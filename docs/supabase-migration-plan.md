@@ -1,15 +1,15 @@
 # Supabase to Khatma BE migration plan
 
 The React Native app currently uses Supabase as its data backend. Rebuild the
-backend in `khatma-be` against the existing RN Supabase behavior, but develop
-and verify it independently of the RN app. Once the API is stable, generate a
-Postman collection for RN integration; only then replace the RN Supabase
-adapters. Auth is implemented in BE; Khatmas, Quran, Zikr, and realtime modules
-are currently empty.
+backend in `khatma-be` against the existing RN Supabase behavior. During Phase
+A, implement each service and create or update its Postman collection. Run the
+end-to-end verification when the RN app is migrated to the new APIs in Phase
+B. Auth and profile are implemented in BE; Khatmas, Quran, Zikr, and realtime
+modules are currently empty.
 
 ## Migration order
 
-## Phase A: Build and verify Khatma BE independently
+## Phase A: Build Khatma BE services and their Postman collections
 
 ### 0. Authentication — implemented and manually verified
 
@@ -19,13 +19,14 @@ are currently empty.
   in and returns access and refresh tokens.
 - [x] Add auth requests to the Postman collection for repeatable verification.
 - [x] Manually verify refresh and sign-out endpoints through Postman.
+- [x] Keep the auth Postman collection current as its API changes.
 
 ### 1. User profile
 
 - [x] Move profile read and display-name update from Supabase `profiles` to the
   BE users API.
 - [x] Preserve current-user scoping and the profile's email/display-name shape.
-- [x] Add independent endpoint and authorization tests.
+- [ ] Create or update the users Postman collection for profile read/update.
 
 ### 2. Shared Khatma lifecycle and membership
 
@@ -37,7 +38,8 @@ are currently empty.
 - [ ] Read member list, member count, and invite code with existing owner/member
   access rules.
 - [ ] Preserve completion timestamp and shared identity for Quran and Zikr.
-- [ ] Add independent endpoint, authorization, and lifecycle tests.
+- [ ] Create or update the Khatmas Postman collection for lifecycle and
+  membership endpoints.
 
 ### 3. Quran Khatma progress
 
@@ -46,7 +48,7 @@ are currently empty.
   Juz cannot be claimed by multiple members.
 - [ ] Update Khatma completion when all Juz are completed, preserving current
   lifecycle behavior.
-- [ ] Add independent tests, including conflicting concurrent Juz claims.
+- [ ] Create or update the Quran Postman collection for progress endpoints.
 
 ### 4. Zikr Khatma progress
 
@@ -58,32 +60,32 @@ are currently empty.
 - [ ] Allow owner phrase correction and goal increase while active; reject goal
   decreases and edits after completion.
 - [ ] Complete the shared Khatma only when completed count reaches the goal.
-- [ ] Add independent tests, including concurrent over-claim and completion
-  rules.
+- [ ] Create or update the Zikr Postman collection for progress and settings
+  endpoints.
 
 ### 5. Realtime updates
 
 - [ ] Replace Supabase Realtime subscriptions with BE-backed events for Quran
   progress, Zikr progress/configuration, member changes, and completion.
-- [ ] Verify event delivery independently with a BE-side test client.
+- [ ] Create or update the realtime Postman collection with the steps needed
+  to connect and observe service events.
 
-### 6. Module-owned Postman collections
-
-- [ ] Define and document endpoint paths, request/response schemas, auth
-  headers, and representative error responses.
-- [ ] Keep a Postman collection in each module's `postman/` directory (for
-  example, `src/auth/postman/Auth.postman_collection.json`).
-- [ ] Include requests for the module's endpoints and use collection variables
-  for base URL, test inputs, and tokens; never commit real secrets.
-- [ ] Run each collection against the independently verified BE and use these
-  collections as the RN integration reference.
+Each service collection lives in that module's `postman/` directory and
+documents endpoint paths, request/response shapes, auth headers, representative
+errors, and variables for the base URL and test inputs. Keep collections current
+when service APIs change; do not commit real secrets.
 
 ## Phase B: Integrate RN and cut over from Supabase
 
 - [ ] Update RN data adapters to match the verified API collection, keeping the
   existing app behavior and shared contracts where possible.
-- [ ] Verify RN flows against Khatma BE: auth, profile, create/join, Quran,
-  Zikr, and live updates.
+- [ ] Run the service Postman collections against the integrated app/backend
+  setup; update collections if integration reveals contract differences.
+- [ ] Verify auth, profile, create/join, Quran, Zikr, membership, and live
+  update flows end to end through the migrated RN app.
+- [ ] Verify authorization, lifecycle rules, concurrent Quran claims, Zikr
+  over-claim prevention, and completion rules during this final verification.
+- [ ] Run the BE and RN automated checks after RN integration is complete.
 - [ ] Confirm no runtime Supabase data/auth/realtime dependency remains.
 - [ ] Decide whether existing Supabase records need a one-time export/import
   into the BE database; verify record counts and ownership before any cutover.
