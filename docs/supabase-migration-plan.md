@@ -26,7 +26,7 @@ modules have been implemented; Phase B integration and verification remain.
 - [x] Move profile read and display-name update from Supabase `profiles` to the
   BE users API.
 - [x] Preserve current-user scoping and the profile's email/display-name shape.
-- [ ] Create or update the users Postman collection for profile read/update.
+- [x] Create or update the users Postman collection for profile read/update.
 
 ### 2. Shared Khatma lifecycle and membership
 

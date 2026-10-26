@@ -1,0 +1,39 @@
+{
+  "info": {
+    "name": "Khatma BE - Users",
+    "description": "Current-user profile read and display-name update. Authenticated requests use the access token from the Auth collection. Protected routes return 401 without a valid bearer token; invalid display names return 400.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "displayName", "value": "Migration verification" }
+  ],
+  "item": [
+    {
+      "name": "Read current profile",
+      "description": "Returns { id, email, displayName } for the authenticated user. A missing user returns 404.",
+      "request": { "method": "GET", "url": "{{baseUrl}}/users/me" },
+      "response": []
+    },
+    {
+      "name": "Update current display name",
+      "description": "Updates only the authenticated user's display name. The trimmed value must contain 1 to 80 characters; invalid input returns 400. Returns { id, email, displayName }.",
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"displayName\": \"{{displayName}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/users/me"
+      },
+      "response": []
+    }
+  ]
+}
