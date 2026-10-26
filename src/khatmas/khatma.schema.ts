@@ -31,6 +31,16 @@ export class QuranJuz {
 
 const QuranJuzSchema = SchemaFactory.createForClass(QuranJuz);
 
+@Schema({ _id: false })
+export class ZikrClaim {
+  @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'User' })
+  userId!: Types.ObjectId;
+  @Prop({ required: true, min: 1 })
+  amount!: number;
+}
+
+const ZikrClaimSchema = SchemaFactory.createForClass(ZikrClaim);
+
 @Schema({ timestamps: { createdAt: true, updatedAt: false } })
 export class Khatma {
   @Prop({ required: true, trim: true, minlength: 1, maxlength: 100 })
@@ -49,6 +59,14 @@ export class Khatma {
   members!: KhatmaMember[];
   @Prop({ type: [QuranJuzSchema], default: undefined })
   quranJuz?: QuranJuz[];
+  @Prop({ trim: true, minlength: 1, maxlength: 500 })
+  zikrPhrase?: string;
+  @Prop({ min: 1 })
+  zikrGoalCount?: number;
+  @Prop({ min: 0, default: 0 })
+  zikrCompletedCount!: number;
+  @Prop({ type: [ZikrClaimSchema], default: [] })
+  zikrClaims!: ZikrClaim[];
 }
 
 export const KhatmaSchema = SchemaFactory.createForClass(Khatma);

@@ -52,15 +52,15 @@ modules are currently empty.
 
 ### 4. Zikr Khatma progress
 
-- [ ] Create Zikr Khatma with phrase and positive goal in one atomic operation.
-- [ ] Read phrase, goal, completed/pending totals, and current user's pending
+- [x] Create Zikr Khatma with phrase and positive goal in one atomic operation.
+- [x] Read phrase, goal, completed/pending totals, and current user's pending
   amount.
-- [ ] Set/edit, release, and complete a member's pending amount atomically;
+- [x] Set/edit, release, and complete a member's pending amount atomically;
   prevent over-claim under concurrent requests.
-- [ ] Allow owner phrase correction and goal increase while active; reject goal
+- [x] Allow owner phrase correction and goal increase while active; reject goal
   decreases and edits after completion.
-- [ ] Complete the shared Khatma only when completed count reaches the goal.
-- [ ] Create or update the Zikr Postman collection for progress and settings
+- [x] Complete the shared Khatma only when completed count reaches the goal.
+- [x] Create or update the Zikr Postman collection for progress and settings
   endpoints.
 
 ### 5. Realtime updates

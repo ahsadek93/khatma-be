@@ -22,6 +22,20 @@ export class KhatmasService {
     return { id: khatma.id, name: khatma.name };
   }
 
+  async createZikr(userId: string, name: string, phrase: string, goalCount: number) {
+    const khatma = await this.khatmas.create({
+      name,
+      type: 'zikr',
+      createdBy: userId,
+      members: [{ userId, role: 'owner' }],
+      zikrPhrase: phrase,
+      zikrGoalCount: goalCount,
+      zikrCompletedCount: 0,
+      zikrClaims: [],
+    });
+    return { id: khatma.id, name: khatma.name };
+  }
+
   async join(userId: string, code: string) {
     const memberId = new Types.ObjectId(userId);
     let khatma = await this.khatmas.findOneAndUpdate(

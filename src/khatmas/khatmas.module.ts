@@ -9,5 +9,6 @@ import { KhatmasService } from './khatmas.service.js';
   imports: [MongooseModule.forFeature([{ name: Khatma.name, schema: KhatmaSchema }, { name: User.name, schema: UserSchema }])],
   controllers: [KhatmasController],
   providers: [KhatmasService],
+  exports: [KhatmasService],
 })
 export class KhatmasModule {}

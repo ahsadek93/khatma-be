@@ -1,0 +1,31 @@
+{
+  "info": {
+    "name": "Khatma BE - Zikr",
+    "description": "Zikr Khatma creation, progress, member claims, and owner settings. Use the access token from the Auth collection. Protected routes return 401 without a valid bearer token; invalid bodies return 400; non-members receive 403 and unknown ids 404.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "khatmaId", "value": "" },
+    { "key": "khatmaName", "value": "Migration verification" },
+    { "key": "phrase", "value": "Subhan Allah" },
+    { "key": "goalCount", "value": "1000" },
+    { "key": "claimAmount", "value": "100" }
+  ],
+  "item": [
+    {
+      "name": "Create Zikr Khatma",
+      "description": "Atomically creates an active Zikr Khatma and makes the current user its owner. Body: { name, phrase, goalCount }. Returns { id, name }.",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["if (pm.response.code === 201) pm.collectionVariables.set('khatmaId', pm.response.json().id);"] } }],
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"{{khatmaName}}\",\n  \"phrase\": \"{{phrase}}\",\n  \"goalCount\": {{goalCount}}\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/zikr/khatmas" },
+      "response": []
+    },
+    { "name": "Read Zikr progress", "description": "Members only. Returns { phrase, goalCount, completedCount, pendingCount, myPendingCount }.", "request": { "method": "GET", "url": "{{baseUrl}}/zikr/khatmas/{{khatmaId}}/progress" }, "response": [] },
+    { "name": "Set or edit my pending amount", "description": "Sets this member's pending amount. Concurrent claims cannot exceed the remaining goal; unavailable capacity returns 409. Body: { amount }.", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"amount\": {{claimAmount}}\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/zikr/khatmas/{{khatmaId}}/claim" }, "response": [] },
+    { "name": "Release my pending amount", "description": "Removes the current member's pending amount. No pending claim returns 409.", "request": { "method": "POST", "url": "{{baseUrl}}/zikr/khatmas/{{khatmaId}}/release" }, "response": [] },
+    { "name": "Complete my pending amount", "description": "Moves the current member's pending amount to completed total and completes the Khatma once completedCount reaches goalCount. No pending claim returns 409.", "request": { "method": "POST", "url": "{{baseUrl}}/zikr/khatmas/{{khatmaId}}/complete" }, "response": [] },
+    { "name": "Update Zikr settings", "description": "Owner only, active Khatmas only. Body: { phrase, goalCount }. Phrase can be corrected and goal increased; decreasing the goal returns 409.", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"phrase\": \"{{phrase}}\",\n  \"goalCount\": {{goalCount}}\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/zikr/khatmas/{{khatmaId}}/settings" }, "response": [] }
+  ]
+}
