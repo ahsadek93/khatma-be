@@ -22,10 +22,10 @@ are currently empty.
 
 ### 1. User profile
 
-- [ ] Move profile read and display-name update from Supabase `profiles` to the
+- [x] Move profile read and display-name update from Supabase `profiles` to the
   BE users API.
-- [ ] Preserve current-user scoping and the profile's email/display-name shape.
-- [ ] Add independent endpoint and authorization tests.
+- [x] Preserve current-user scoping and the profile's email/display-name shape.
+- [x] Add independent endpoint and authorization tests.
 
 ### 2. Shared Khatma lifecycle and membership
 
