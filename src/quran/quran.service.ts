@@ -92,12 +92,12 @@ export class QuranService {
       ? { _id: id, ...QURAN, status: 'active', 'members.userId': userId, quranJuz: { $elemMatch: { juzNumber, status: 'free' } } } as const
       : { _id: id, ...QURAN, status: 'active', 'members.userId': userId, quranJuz: { $elemMatch: heldJuz } } as const;
     const update = action === 'claim'
-      ? { $set: { 'quranJuz.$.status': 'claimed', 'quranJuz.$.claimedBy': userId, 'quranJuz.$.claimedAt': now } }
+      ? { $set: { 'quranJuz.$[juz].status': 'claimed', 'quranJuz.$[juz].claimedBy': userId, 'quranJuz.$[juz].claimedAt': now } }
       : action === 'release'
-        ? { $set: { 'quranJuz.$.status': 'free', 'quranJuz.$.claimedBy': null, 'quranJuz.$.claimedAt': null } }
-        : { $set: { 'quranJuz.$.status': 'completed', 'quranJuz.$.completedAt': now } };
+        ? { $set: { 'quranJuz.$[juz].status': 'free', 'quranJuz.$[juz].claimedBy': null, 'quranJuz.$[juz].claimedAt': null } }
+        : { $set: { 'quranJuz.$[juz].status': 'completed', 'quranJuz.$[juz].completedAt': now } };
     const result = await this.khatmas
-      .updateOne(filter, update)
+      .updateOne(filter, update, { arrayFilters: [{ 'juz.juzNumber': juzNumber }] })
       .exec();
 
     if (result.modifiedCount !== 1) throw new ConflictException(action === 'claim' ? 'Juz is unavailable' : 'You do not hold this Juz');
