@@ -63,10 +63,10 @@ export class Khatma {
   zikrPhrase?: string;
   @Prop({ min: 1 })
   zikrGoalCount?: number;
-  @Prop({ min: 0, default: 0 })
-  zikrCompletedCount!: number;
-  @Prop({ type: [ZikrClaimSchema], default: [] })
-  zikrClaims!: ZikrClaim[];
+  @Prop({ min: 0, default: undefined })
+  zikrCompletedCount?: number;
+  @Prop({ type: [ZikrClaimSchema], default: undefined })
+  zikrClaims?: ZikrClaim[];
 }
 
 export const KhatmaSchema = SchemaFactory.createForClass(Khatma);
