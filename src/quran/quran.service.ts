@@ -65,6 +65,7 @@ export class QuranService {
       const completion = await this.khatmas.updateOne(
         { _id: id, type: 'quran', status: 'active', quranJuz: { $not: { $elemMatch: { status: { $ne: 'completed' } } } } },
         [{ $set: { status: 'completed', completedAt: { $ifNull: ['$completedAt', now] } } }],
+        { updatePipeline: true },
       ).exec();
       if (completion.modifiedCount === 1) this.realtime.publish(id, 'completed');
     }

@@ -23,9 +23,9 @@ export class QuranJuz {
   status!: 'free' | 'claimed' | 'completed';
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   claimedBy!: Types.ObjectId | null;
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   claimedAt!: Date | null;
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   completedAt!: Date | null;
 }
 
@@ -53,7 +53,7 @@ export class Khatma {
   type!: 'quran' | 'zikr';
   @Prop({ required: true, enum: ['active', 'completed'], default: 'active', index: true })
   status!: 'active' | 'completed';
-  @Prop({ default: null })
+  @Prop({ type: Date, default: null })
   completedAt!: Date | null;
   @Prop({ type: [KhatmaMemberSchema], default: [] })
   members!: KhatmaMember[];

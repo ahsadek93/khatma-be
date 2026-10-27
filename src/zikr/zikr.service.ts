@@ -34,6 +34,7 @@ export class ZikrService {
         { $map: { input: '$zikrClaims', as: 'claim', in: { $cond: [{ $eq: ['$$claim.userId', userObjectId] }, { userId: '$$claim.userId', amount }, '$$claim'] } } },
         { $concatArrays: ['$zikrClaims', [{ userId: userObjectId, amount }]] },
       ] } } }],
+      { updatePipeline: true },
     ).exec();
     if (result.matchedCount !== 1) throw new ConflictException('Claim exceeds the remaining goal');
     this.realtime.publish(id, 'progressChanged');
@@ -59,11 +60,35 @@ export class ZikrService {
       { _id: id, type: 'zikr', status: 'active', 'members.userId': userObjectId, 'zikrClaims.userId': userObjectId },
       [
         { $set: {
-          zikrCompletedCount: { $add: ['$zikrCompletedCount', { $let: { vars: { claim: { $arrayElemAt: [{ $filter: { input: '$zikrClaims', as: 'claim', cond: { $eq: ['$$claim.userId', userObjectId] } } }, 0] }, in: '$$claim.amount' } }] },
+          zikrCompletedCount: {
+            $add: [
+              '$zikrCompletedCount',
+              {
+                $let: {
+                  vars: {
+                    claim: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: '$zikrClaims',
+                            as: 'claim',
+                            cond: { $eq: ['$$claim.userId', userObjectId] },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                  in: '$$claim.amount',
+                },
+              },
+            ],
+          },
           zikrClaims: { $filter: { input: '$zikrClaims', as: 'claim', cond: { $ne: ['$$claim.userId', userObjectId] } } },
         } },
         { $set: { status: { $cond: [{ $gte: ['$zikrCompletedCount', '$zikrGoalCount'] }, 'completed', 'active'] }, completedAt: { $cond: [{ $gte: ['$zikrCompletedCount', '$zikrGoalCount'] }, { $ifNull: ['$completedAt', new Date()] }, '$completedAt'] } } },
       ],
+      { updatePipeline: true },
     ).exec();
     if (result.modifiedCount !== 1) throw new ConflictException('You have no pending claim');
     this.realtime.publish(id, 'progressChanged');
