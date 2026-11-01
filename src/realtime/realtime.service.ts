@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { MessageEvent } from '@nestjs/common';
-import { Observable, Subject } from 'rxjs';
+import { interval, Observable, Subject } from 'rxjs';
 
 export type KhatmaEvent = 'progressChanged' | 'membersChanged' | 'completed';
 
@@ -18,9 +18,11 @@ export class RealtimeService {
     const current = stream;
     return new Observable<MessageEvent>((subscriber) => {
       const subscription = current.subscribe(subscriber);
+      const heartbeat = interval(25_000).subscribe(() => subscriber.next({ comment: 'heartbeat' }));
       subscriber.next({ type: 'connected', data: 'connected' });
       return () => {
         subscription.unsubscribe();
+        heartbeat.unsubscribe();
         if (current.observed === false && this.streams.get(khatmaId) === current) this.streams.delete(khatmaId);
       };
     });
