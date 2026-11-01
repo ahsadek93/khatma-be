@@ -2,6 +2,8 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import type { Model } from 'mongoose';
+import type { PaginationQueryDto } from '../common/pagination.dto.js';
+import { paginatedResponse } from '../common/paginated-response.js';
 import { User } from '../users/user.schema.js';
 import { Khatma } from './khatma.schema.js';
 import { RealtimeService } from '../realtime/realtime.service.js';
@@ -52,25 +54,99 @@ export class KhatmasService {
     return { id: khatma.id, type: khatma.type };
   }
 
-  async list(userId: string, status: 'active' | 'completed', type: 'quran' | 'zikr') {
-    const khatmas = await this.khatmas.find({ 'members.userId': userId, status, type }).exec();
-    khatmas.sort((a, b) =>
-      a.members.find((member) => member.userId.toString() === userId)!.joinedAt.getTime() -
-      b.members.find((member) => member.userId.toString() === userId)!.joinedAt.getTime(),
+  async list(
+    userId: string,
+    query: { status: 'active' | 'completed'; type: 'quran' | 'zikr' } & PaginationQueryDto,
+  ) {
+    const memberId = new Types.ObjectId(userId);
+    const offset = (query.page - 1) * query.perPage;
+    const [result] = await this.khatmas.aggregate<{
+      data: Array<{
+        _id: Types.ObjectId;
+        name: string;
+        type: 'quran' | 'zikr';
+        completedAt: Date | null;
+        memberCount: number;
+      }>;
+      total: Array<{ count: number }>;
+    }>([
+      { $match: { 'members.userId': memberId, status: query.status, type: query.type } },
+      {
+        $addFields: {
+          joinedAt: {
+            $arrayElemAt: [
+              {
+                $map: {
+                  input: {
+                    $filter: {
+                      input: '$members',
+                      as: 'member',
+                      cond: { $eq: ['$$member.userId', memberId] },
+                    },
+                  },
+                  as: 'member',
+                  in: '$$member.joinedAt',
+                },
+              },
+              0,
+            ],
+          },
+        },
+      },
+      { $sort: { joinedAt: 1, _id: 1 } },
+      {
+        $facet: {
+          data: [
+            { $skip: offset },
+            { $limit: query.perPage },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                type: 1,
+                completedAt: 1,
+                memberCount: { $size: '$members' },
+              },
+            },
+          ],
+          total: [{ $count: 'count' }],
+        },
+      },
+    ]).exec();
+    const rows = result?.data ?? [];
+    const data = rows.map((khatma) =>
+      query.status === 'active'
+        ? {
+            id: khatma._id.toString(),
+            name: khatma.name,
+            type: khatma.type,
+            memberCount: khatma.memberCount,
+          }
+        : {
+            id: khatma._id.toString(),
+            name: khatma.name,
+            type: khatma.type,
+            completedAt: khatma.completedAt?.toISOString() ?? '',
+          },
     );
-    return khatmas.map((khatma) => status === 'active'
-      ? { id: khatma.id, name: khatma.name, type: khatma.type, memberCount: khatma.members.length }
-      : { id: khatma.id, name: khatma.name, type: khatma.type, completedAt: khatma.completedAt?.toISOString() ?? '' });
+    return paginatedResponse(data, query.page, query.perPage, result?.total[0]?.count ?? 0);
   }
 
-  async members(userId: string, id: string) {
+  async members(userId: string, id: string, pagination: PaginationQueryDto) {
     const khatma = await this.getMemberKhatma(userId, id);
-    const userIds = khatma.members.map((member) => member.userId);
+    const members = [...khatma.members].sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime());
+    const offset = (pagination.page - 1) * pagination.perPage;
+    const pageMembers = members.slice(offset, offset + pagination.perPage);
+    const userIds = pageMembers.map((member) => member.userId);
     const users = await this.users.find({ _id: { $in: userIds } }).select('_id displayName').lean().exec();
     const names = new Map(users.map((user) => [user._id.toString(), user.displayName || null]));
-    return [...khatma.members]
-      .sort((a, b) => a.joinedAt.getTime() - b.joinedAt.getTime())
-      .map((member) => ({ userId: member.userId.toString(), displayName: names.get(member.userId.toString()) ?? null, role: member.role, joinedAt: member.joinedAt.toISOString() }));
+    const data = pageMembers.map((member) => ({
+      userId: member.userId.toString(),
+      displayName: names.get(member.userId.toString()) ?? null,
+      role: member.role,
+      joinedAt: member.joinedAt.toISOString(),
+    }));
+    return paginatedResponse(data, pagination.page, pagination.perPage, members.length);
   }
 
   async invite(userId: string, id: string) {

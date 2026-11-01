@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { HydratedDocument, Model } from 'mongoose';
+import type { PaginationQueryDto } from '../common/pagination.dto.js';
+import { paginatedResponse } from '../common/paginated-response.js';
 import { Khatma } from '../khatmas/khatma.schema.js';
 import { User } from '../users/user.schema.js';
 import { RealtimeService } from '../realtime/realtime.service.js';
@@ -29,15 +31,17 @@ export class QuranService {
 
   // ---------------------------------------------------------------- queries
 
-  async getJuz(userId: string, id: string) {
+  async getJuz(userId: string, id: string, pagination: PaginationQueryDto) {
     const { quranJuz } = await this.getKhatma(userId, id);
+    const offset = (pagination.page - 1) * pagination.perPage;
+    const pageJuz = quranJuz.slice(offset, offset + pagination.perPage);
     const names = await this.loadDisplayNames(
-      quranJuz.flatMap((juz) =>
+      pageJuz.flatMap((juz) =>
         juz.claimedBy ? [juz.claimedBy.toString()] : [],
       ),
     );
 
-    return quranJuz.map((juz) => {
+    const data = pageJuz.map((juz) => {
       const claimedBy = juz.claimedBy?.toString() ?? null;
       return {
         juzNumber: juz.juzNumber,
@@ -48,6 +52,7 @@ export class QuranService {
           : null,
       };
     });
+    return paginatedResponse(data, pagination.page, pagination.perPage, quranJuz.length);
   }
 
   async getProgress(userId: string, id: string) {

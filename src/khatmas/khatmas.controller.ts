@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { PaginationQueryDto } from '../common/pagination.dto.js';
 import { CurrentUser } from '../users/current-user.js';
 import type { AuthenticatedUser } from '../users/current-user.js';
 import { CreateKhatmaDto, JoinKhatmaDto, KhatmaIdParamDto, ListKhatmasQueryDto } from './khatmas.dto.js';
@@ -17,11 +18,15 @@ export class KhatmasController {
   }
   @Get()
   list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListKhatmasQueryDto) {
-    return this.khatmas.list(user.id, query.status, query.type);
+    return this.khatmas.list(user.id, query);
   }
   @Get(':id/members')
-  members(@CurrentUser() user: AuthenticatedUser, @Param() params: KhatmaIdParamDto) {
-    return this.khatmas.members(user.id, params.id);
+  members(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param() params: KhatmaIdParamDto,
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.khatmas.members(user.id, params.id, query);
   }
   @Get(':id/invite')
   invite(@CurrentUser() user: AuthenticatedUser, @Param() params: KhatmaIdParamDto) {

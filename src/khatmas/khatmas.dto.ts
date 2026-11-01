@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsIn, IsMongoId, IsOptional, IsString, Length, Matches, MaxLength } from 'class-validator';
+import { PaginationQueryDto } from '../common/pagination.dto.js';
 
 export class CreateKhatmaDto {
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
@@ -16,7 +17,7 @@ export class JoinKhatmaDto {
   code!: string;
 }
 
-export class ListKhatmasQueryDto {
+export class ListKhatmasQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsIn(['active', 'completed'])
   status: 'active' | 'completed' = 'active';

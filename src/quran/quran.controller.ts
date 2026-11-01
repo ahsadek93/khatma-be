@@ -1,8 +1,8 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { KhatmaIdParamDto } from '../khatmas/khatmas.dto.js';
 import { CurrentUser } from '../users/current-user.js';
 import type { AuthenticatedUser } from '../users/current-user.js';
-import { JuzActionDto } from './quran.dto.js';
+import { JuzActionDto, JuzPaginationQueryDto } from './quran.dto.js';
 import { QuranService } from './quran.service.js';
 
 @Controller('quran/khatmas/:id')
@@ -10,8 +10,12 @@ export class QuranController {
   constructor(private readonly quran: QuranService) {}
 
   @Get('juz')
-  getJuz(@CurrentUser() user: AuthenticatedUser, @Param() params: KhatmaIdParamDto) {
-    return this.quran.getJuz(user.id, params.id);
+  getJuz(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param() params: KhatmaIdParamDto,
+    @Query() query: JuzPaginationQueryDto,
+  ) {
+    return this.quran.getJuz(user.id, params.id, query);
   }
 
   @Get('progress')
