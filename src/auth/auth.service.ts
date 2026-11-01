@@ -1,13 +1,14 @@
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import type { Model } from 'mongoose';
+import type { AppConfig } from '../config/configuration.js';
 import { UsersService } from '../users/users.service.js';
 import { AuthMailerService } from './auth-mailer.service.js';
 import { AuthSession, OtpChallenge } from './auth.schemas.js';
 
-const otpPepper = requiredSecret('OTP_PEPPER');
 const accessTokenTtlMs = 15 * 60 * 1000;
 const refreshTokenTtlMs = 30 * 24 * 60 * 60 * 1000;
 const otpTtlMs = 10 * 60 * 1000;
@@ -22,6 +23,7 @@ export class AuthService {
     private readonly users: UsersService,
     private readonly mailer: AuthMailerService,
     private readonly jwt: JwtService,
+    private readonly config: ConfigService<AppConfig, true>,
   ) {}
 
   async requestCode(email: string) {
@@ -128,18 +130,12 @@ export class AuthService {
   }
 
   private hashOtp(email: string, code: string) {
-    return createHmac('sha256', otpPepper).update(`${email}:${code}`).digest('hex');
+    return createHmac('sha256', this.config.get('OTP_PEPPER', { infer: true })).update(`${email}:${code}`).digest('hex');
   }
 
   private hashToken(token: string) {
     return createHash('sha256').update(token).digest('hex');
   }
-}
-
-function requiredSecret(name: string) {
-  const value = process.env[name];
-  if (!value || Buffer.byteLength(value) < 32) throw new Error(`${name} must contain at least 32 bytes`);
-  return value;
 }
 
 function isDuplicateKey(error: unknown): boolean {

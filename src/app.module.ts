@@ -1,8 +1,10 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { databaseUri } from './config/configuration.js';
 import { AuthModule } from './auth/auth.module.js';
+import { validateConfig } from './config/configuration.js';
+import type { AppConfig } from './config/configuration.js';
 import { HealthModule } from './health/health.module.js';
 import { KhatmasModule } from './khatmas/khatmas.module.js';
 import { QuranModule } from './quran/quran.module.js';
@@ -12,7 +14,13 @@ import { ZikrModule } from './zikr/zikr.module.js';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(databaseUri),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateConfig }),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<AppConfig, true>) => ({
+        uri: config.get('MONGODB_URI', { infer: true }),
+      }),
+    }),
     AuthModule,
     UsersModule,
     KhatmasModule,

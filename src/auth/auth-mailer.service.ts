@@ -1,20 +1,26 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import nodemailer from 'nodemailer';
+import type { AppConfig } from '../config/configuration.js';
 
 @Injectable()
 export class AuthMailerService {
   private readonly logger = new Logger(AuthMailerService.name);
-  private readonly from = requiredEnv('SMTP_FROM');
-  private readonly port = Number(process.env.SMTP_PORT ?? 587);
-  private readonly transporter = nodemailer.createTransport({
-    host: requiredEnv('SMTP_HOST'),
-    port: this.port,
-    secure: readSecureTransport(),
-    auth: {
-      user: requiredEnv('SMTP_USER'),
-      pass: requiredEnv('SMTP_PASS'),
-    },
-  });
+  private readonly from: string;
+  private readonly transporter: ReturnType<typeof nodemailer.createTransport>;
+
+  constructor(config: ConfigService<AppConfig, true>) {
+    this.from = config.get('SMTP_FROM', { infer: true });
+    this.transporter = nodemailer.createTransport({
+      host: config.get('SMTP_HOST', { infer: true }),
+      port: config.get('SMTP_PORT', { infer: true }),
+      secure: config.get('SMTP_SECURE', { infer: true }),
+      auth: {
+        user: config.get('SMTP_USER', { infer: true }),
+        pass: config.get('SMTP_PASS', { infer: true }),
+      },
+    });
+  }
 
   async sendSignInCode(email: string, token: string) {
     try {
@@ -32,20 +38,4 @@ export class AuthMailerService {
       throw new ServiceUnavailableException('Unable to send sign-in code');
     }
   }
-}
-
-if (!Number.isInteger(Number(process.env.SMTP_PORT ?? 587)) || Number(process.env.SMTP_PORT ?? 587) < 1 || Number(process.env.SMTP_PORT ?? 587) > 65535) {
-  throw new Error('SMTP_PORT must be a valid TCP port');
-}
-
-function readSecureTransport() {
-  const value = (process.env.SMTP_SECURE ?? 'false').toLowerCase();
-  if (value !== 'true' && value !== 'false') throw new Error('SMTP_SECURE must be true or false');
-  return value === 'true';
-}
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]?.trim();
-  if (!value) throw new Error(`Missing required environment variable: ${name}`);
-  return value;
 }
